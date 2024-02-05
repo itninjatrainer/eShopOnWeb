@@ -73,7 +73,18 @@ jobs:
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
-           
+        
+   # Check if WebApp exists, and create if it does not
+    - name: Create WebApp if not exists
+      run: |
+        EXISTS=$(az webapp show --name ${{ env.WEBAPP-NAME }} --resource-group ${{ env.RESOURCE-GROUP }} --query id -o tsv)
+        if [ -z "$EXISTS" ]; then
+          az webapp create --name ${{ env.WEBAPP-NAME }} --resource-group ${{ env.RESOURCE-GROUP }} --plan YOUR_SERVICE_PLAN --runtime "DOTNETCORE|8.0" --output none
+          echo "WebApp created"
+        else
+          echo "WebApp already exists"
+        fi          
+   
     # Deploy Azure WebApp using Bicep file
     - name: deploy
       uses: azure/arm-deploy@v1
